@@ -431,10 +431,6 @@
         transform: scale(0.96);
       }
       #motionToggle .motion-icon {
-        position: absolute;
-        left: 12px;
-        top: 50%;
-        transform: translateY(-50%) rotate(-15deg) scale(0.9);
         opacity: 0;
         transition: opacity 180ms ease, transform 220ms ease;
         pointer-events: none;
@@ -445,7 +441,9 @@
       }
       .motion-off #motionToggle .motion-icon-off {
         opacity: 1;
-        transform: translateY(-50%) rotate(0) scale(1);
+      }
+      .motion-off #motionToggle .motion-icon-on {
+        display: none;
       }
       .motion-on #motionToggle {
         background: linear-gradient(
@@ -458,9 +456,11 @@
           0 10px 30px var(--glass-shadow);
         animation: holo-activate 0.4s ease-out;
       }
+      .motion-on #motionToggle .motion-icon-off {
+        display: none;
+      }
       .motion-on #motionToggle .motion-icon-on {
         opacity: 1;
-        transform: translateY(-50%) rotate(0) scale(1);
         color: rgb(34, 197, 94);
       }
       .motion-on #motionToggle span {
@@ -482,76 +482,6 @@
           box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.2),
             0 10px 30px var(--glass-shadow);
         }
-      }
-
-      /* Debug panel styles */
-      #debugPanel {
-        position: fixed;
-        top: 20px;
-        left: 20px;
-        z-index: 9999;
-        padding: 12px 16px;
-        background: var(--glass-bg);
-        -webkit-backdrop-filter: blur(20px) saturate(140%);
-        backdrop-filter: blur(20px) saturate(140%);
-        border: 1px solid var(--glass-stroke);
-        border-radius: 12px;
-        box-shadow: 0 8px 25px var(--glass-shadow);
-        font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas,
-          'Courier New', monospace;
-        font-size: 11px;
-        line-height: 1.4;
-        color: var(--text-high);
-        min-width: 200px;
-        opacity: 0;
-        transform: translateY(-10px);
-        transition: opacity 0.3s ease, transform 0.3s ease;
-        pointer-events: none;
-        user-select: none;
-      }
-      #debugPanel.visible {
-        opacity: 1;
-        transform: translateY(0);
-      }
-      #debugPanel h4 {
-        margin: 0 0 8px 0;
-        font-size: 12px;
-        font-weight: 600;
-        color: var(--text-high);
-        border-bottom: 1px solid var(--glass-stroke);
-        padding-bottom: 4px;
-      }
-      #debugPanel .debug-row {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 4px;
-      }
-      #debugPanel .debug-label {
-        color: var(--text-med);
-        margin-right: 8px;
-      }
-      #debugPanel .debug-value {
-        color: var(--text-high);
-        font-weight: 500;
-        text-align: right;
-        min-width: 60px;
-      }
-      #debugPanel .debug-status {
-        padding: 2px 6px;
-        border-radius: 4px;
-        font-size: 10px;
-        font-weight: 600;
-        text-transform: uppercase;
-      }
-      #debugPanel .debug-status.active {
-        background: rgba(34, 197, 94, 0.2);
-        color: rgb(34, 197, 94);
-        border: 1px solid rgba(34, 197, 94, 0.3);
-      }
-      #debugPanel .debug-status.inactive {
-        background: rgba(239, 68, 68, 0.2);
-        color: rgb(239, 68, 68);
-        border: 1px solid rgba(239, 68, 68, 0.3);
       }
 
       /* Social chips micro-interaction */
@@ -655,43 +585,6 @@
   <body
     class="min-h-screen liquid-bg transition-all duration-300 flex items-center"
   >
-    <!-- Debug Panel -->
-    <div id="debugPanel" class="glass">
-      <h4>🔍 Gyro Debug</h4>
-      <div class="debug-row">
-        <span class="debug-label">Status:</span>
-        <span id="debugStatus" class="debug-status inactive">Inactive</span>
-      </div>
-      <div class="debug-row">
-        <span class="debug-label">Device:</span>
-        <span id="debugDevice" class="debug-value">--</span>
-      </div>
-      <div class="debug-row">
-        <span class="debug-label">Permission:</span>
-        <span id="debugPermission" class="debug-value">--</span>
-      </div>
-      <div class="debug-row">
-        <span class="debug-label">Alpha (Z):</span>
-        <span id="debugAlpha" class="debug-value">--</span>
-      </div>
-      <div class="debug-row">
-        <span class="debug-label">Beta (X):</span>
-        <span id="debugBeta" class="debug-value">--</span>
-      </div>
-      <div class="debug-row">
-        <span class="debug-label">Gamma (Y):</span>
-        <span id="debugGamma" class="debug-value">--</span>
-      </div>
-      <div class="debug-row">
-        <span class="debug-label">BG Offset:</span>
-        <span id="debugBgOffset" class="debug-value">--</span>
-      </div>
-      <div class="debug-row">
-        <span class="debug-label">Card Offset:</span>
-        <span id="debugCardOffset" class="debug-value">--</span>
-      </div>
-    </div>
-
     <div class="bg-anim" aria-hidden="true">
       <span class="blob blob-1"></span>
       <span class="blob blob-2"></span>
@@ -713,9 +606,10 @@
           ></i>
           <span class="text-xs font-medium">Holograma</span>
         </button>
+
         <button
           id="themeToggle"
-          class="relative p-2 glass soft glass-chip text-high hover:brightness-110 transition-all duration-300"
+          class="relative p-4 glass soft glass-chip text-high hover:brightness-110 transition-all duration-300"
           aria-label="Toggle theme"
         >
           <i class="fas fa-sun text-lg theme-icon theme-icon-sun"></i>
@@ -937,67 +831,6 @@
                 `${parallaxTransform} ${currentTransform}`.trim();
             }
           });
-
-          // Update debug panel
-          this.updateDebugPanel(angles, {
-            bgOffset: { x: bgOffsetX, y: bgOffsetY },
-            cardOffset: { x: cardOffsetX, y: cardOffsetY },
-            normalized: { beta: normalizedBeta, gamma: normalizedGamma },
-          });
-        }
-
-        updateDebugPanel(angles, offsets) {
-          const debugPanel = document.getElementById('debugPanel');
-          const debugStatus = document.getElementById('debugStatus');
-          const debugDevice = document.getElementById('debugDevice');
-          const debugPermission = document.getElementById('debugPermission');
-          const debugAlpha = document.getElementById('debugAlpha');
-          const debugBeta = document.getElementById('debugBeta');
-          const debugGamma = document.getElementById('debugGamma');
-          const debugBgOffset = document.getElementById('debugBgOffset');
-          const debugCardOffset = document.getElementById('debugCardOffset');
-
-          if (!debugPanel) return;
-
-          // Always show device info
-          const isIOS = DeviceOrientationParallax.isIOS();
-          const needsPermission = DeviceOrientationParallax.needsPermission();
-          debugDevice.textContent = isIOS ? 'iOS' : 'Other';
-          debugPermission.textContent = needsPermission
-            ? 'Required'
-            : 'Not Required';
-
-          // Update status and motion data
-          if (this.isActive) {
-            debugStatus.textContent = 'Active';
-            debugStatus.className = 'debug-status active';
-
-            // Update orientation values
-            debugAlpha.textContent =
-              angles.alpha !== null ? `${angles.alpha}°` : '--';
-            debugBeta.textContent =
-              angles.beta !== null ? `${angles.beta}°` : '--';
-            debugGamma.textContent =
-              angles.gamma !== null ? `${angles.gamma}°` : '--';
-
-            // Update offset values
-            debugBgOffset.textContent = `${offsets.bgOffset.x.toFixed(
-              1
-            )}, ${offsets.bgOffset.y.toFixed(1)}`;
-            debugCardOffset.textContent = `${offsets.cardOffset.x.toFixed(
-              1
-            )}, ${offsets.cardOffset.y.toFixed(1)}`;
-          } else {
-            debugStatus.textContent = 'Inactive';
-            debugStatus.className = 'debug-status inactive';
-
-            // Reset debug values
-            debugAlpha.textContent = '--';
-            debugBeta.textContent = '--';
-            debugGamma.textContent = '--';
-            debugBgOffset.textContent = '--';
-            debugCardOffset.textContent = '--';
-          }
         }
 
         async requestAccess() {
@@ -1075,15 +908,6 @@
             blob.style.transform = '';
           });
 
-          // Update debug panel
-          this.updateDebugPanel(
-            { alpha: null, beta: null, gamma: null },
-            {
-              bgOffset: { x: 0, y: 0 },
-              cardOffset: { x: 0, y: 0 },
-            }
-          );
-
           // Update UI state
           document.documentElement.classList.remove(this.motionStateClasses.on);
           document.documentElement.classList.add(this.motionStateClasses.off);
@@ -1121,18 +945,6 @@
 
         // Initialize device orientation parallax
         deviceParallax = new DeviceOrientationParallax();
-
-        // Initialize debug panel with device info
-        deviceParallax.updateDebugPanel(
-          { alpha: null, beta: null, gamma: null },
-          { bgOffset: { x: 0, y: 0 }, cardOffset: { x: 0, y: 0 } }
-        );
-
-        // Always show debug panel for development
-        const debugPanel = document.getElementById('debugPanel');
-        if (debugPanel) {
-          debugPanel.classList.add('visible');
-        }
 
         // Show motion toggle only if device orientation is supported
         if (DeviceOrientationParallax.isSupported()) {
