@@ -4,27 +4,1241 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>Strifer.dev</title>
+    <meta name="color-scheme" content="light dark" />
+    <title>@LinkStrifer - Link Tree</title>
+    <meta
+      name="description"
+      content="Encuentra todos los enlaces de LinkStrifer en un solo lugar"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <script>
+      (function () {
+        const html = document.documentElement;
+        const savedMode = localStorage.getItem('colorMode');
+
+        if (savedMode) {
+          html.classList.toggle('dark', savedMode === 'dark');
+        } else {
+          const prefersDark = window.matchMedia(
+            '(prefers-color-scheme: dark)'
+          ).matches;
+          html.classList.toggle('dark', prefersDark);
+        }
+      })();
+    </script>
+    <style>
+      :root {
+        --bg-1: #60a5fa; /* sky */
+        --bg-2: #a78bfa; /* violet */
+        --bg-3: #22d3ee; /* cyan */
+        --bg-tx: 0px; /* liquid bg translate X */
+        --bg-ty: 0px; /* liquid bg translate Y */
+        --glass-bg: rgba(255, 255, 255, 0.5);
+        --glass-stroke: rgba(255, 255, 255, 0.7);
+        --glass-shadow: rgba(16, 24, 40, 0.12);
+        --text-high: #0b1220;
+        --text-med: rgba(11, 18, 32, 0.7);
+      }
+      /* Apple-like typography */
+      body,
+      button,
+      a,
+      input,
+      textarea {
+        font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text',
+          'SF Pro Display', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      }
+      .dark :root,
+      .dark {
+        --glass-bg: rgba(10, 12, 16, 0.45);
+        --glass-stroke: rgba(255, 255, 255, 0.22);
+        --glass-shadow: rgba(0, 0, 0, 0.35);
+        --text-high: #f8fafc;
+        --text-med: rgba(248, 250, 252, 0.7);
+      }
+
+      /* Liquid glass backdrop */
+      .liquid-bg {
+        position: relative;
+        background: radial-gradient(
+            1200px 800px at -10% -10%,
+            rgba(96, 165, 250, 0.25),
+            transparent 60%
+          ),
+          radial-gradient(
+            1000px 700px at 110% 10%,
+            rgba(167, 139, 250, 0.25),
+            transparent 60%
+          ),
+          radial-gradient(
+            900px 700px at 50% 120%,
+            rgba(34, 211, 238, 0.25),
+            transparent 60%
+          ),
+          linear-gradient(180deg, #f8fafc, #eef2ff);
+        transition: background 0.6s ease;
+      }
+      .dark .liquid-bg {
+        background: radial-gradient(
+            1200px 800px at -10% -10%,
+            rgba(96, 165, 250, 0.12),
+            transparent 60%
+          ),
+          radial-gradient(
+            1000px 700px at 110% 10%,
+            rgba(167, 139, 250, 0.12),
+            transparent 60%
+          ),
+          radial-gradient(
+            900px 700px at 50% 120%,
+            rgba(34, 211, 238, 0.12),
+            transparent 60%
+          ),
+          linear-gradient(180deg, #0b1220, #0b1020);
+      }
+      .liquid-bg::before {
+        content: '';
+        position: fixed;
+        inset: -25%;
+        background: conic-gradient(
+          from 0deg at 50% 50%,
+          rgba(96, 165, 250, 0.2),
+          rgba(167, 139, 250, 0.15),
+          rgba(34, 211, 238, 0.18),
+          rgba(96, 165, 250, 0.2)
+        );
+        filter: blur(80px) saturate(140%);
+        opacity: 0.6;
+        animation: bg-rotate 60s linear infinite;
+        pointer-events: none;
+        z-index: 0;
+      }
+      @keyframes bg-rotate {
+        0% {
+          transform: translate(var(--bg-tx), var(--bg-ty)) rotate(0deg);
+        }
+        100% {
+          transform: translate(var(--bg-tx), var(--bg-ty)) rotate(360deg);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .liquid-bg::before {
+          animation: none;
+        }
+      }
+
+      /* Floating blobs background */
+      .bg-anim {
+        position: fixed;
+        inset: 0;
+        z-index: 1; /* above liquid-bg::before, below content */
+        pointer-events: none;
+        overflow: hidden;
+      }
+      .blob {
+        position: absolute;
+        width: 80vmax;
+        aspect-ratio: 1 / 1;
+        opacity: 0.5;
+        border-radius: 999px;
+        background: radial-gradient(
+          closest-side,
+          rgba(96, 165, 250, 0.85),
+          rgba(96, 165, 250, 0) 70%
+        );
+        mix-blend-mode: screen;
+        will-change: transform;
+        transform: translate3d(0, 0, 0) scale(1);
+      }
+      .dark .blob {
+        opacity: 0.4;
+      }
+      .blob-1 {
+        top: -12vmax;
+        left: -10vmax;
+        animation: float-a 14s ease-in-out infinite alternate,
+          pulse 7s ease-in-out -1s infinite alternate;
+      }
+      .blob-2 {
+        right: -14vmax;
+        bottom: -12vmax;
+        background: radial-gradient(
+          closest-side,
+          rgba(167, 139, 250, 0.85),
+          rgba(167, 139, 250, 0) 70%
+        );
+        animation: float-b 16s ease-in-out 1.2s infinite alternate,
+          pulse 6.5s ease-in-out -0.4s infinite alternate;
+      }
+      .blob-3 {
+        top: 18vmax;
+        right: 10vmax;
+        background: radial-gradient(
+          closest-side,
+          rgba(34, 211, 238, 0.85),
+          rgba(34, 211, 238, 0) 70%
+        );
+        animation: float-c 15s ease-in-out 0.6s infinite alternate,
+          pulse 8s ease-in-out -0.8s infinite alternate;
+      }
+      .blob-4 {
+        left: 8vmax;
+        bottom: 8vmax;
+        width: 60vmax;
+        background: radial-gradient(
+          closest-side,
+          rgba(99, 102, 241, 0.8),
+          rgba(99, 102, 241, 0) 70%
+        );
+        animation: float-d 17s ease-in-out 0.9s infinite alternate,
+          pulse 7.5s ease-in-out -1.2s infinite alternate;
+      }
+      .blob-5 {
+        top: -6vmax;
+        right: 30vmax;
+        width: 48vmax;
+        background: radial-gradient(
+          closest-side,
+          rgba(96, 165, 250, 0.9),
+          rgba(96, 165, 250, 0) 70%
+        );
+        animation: float-e 16s ease-in-out 0.3s infinite alternate,
+          pulse 6.8s ease-in-out -0.6s infinite alternate;
+      }
+      @keyframes float-a {
+        0% {
+          transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+        }
+        50% {
+          transform: translate3d(16vmax, 8vmax, 0) scale(1.1) rotate(12deg);
+        }
+        100% {
+          transform: translate3d(8vmax, 20vmax, 0) scale(1.06) rotate(20deg);
+        }
+      }
+      @keyframes float-b {
+        0% {
+          transform: translate3d(0, 0, 0) scale(1.06) rotate(0deg);
+        }
+        50% {
+          transform: translate3d(-16vmax, -12vmax, 0) scale(1.12) rotate(-10deg);
+        }
+        100% {
+          transform: translate3d(-6vmax, -20vmax, 0) scale(1.08) rotate(-18deg);
+        }
+      }
+      @keyframes float-c {
+        0% {
+          transform: translate3d(0, 0, 0) scale(1.02) rotate(0deg);
+        }
+        50% {
+          transform: translate3d(-16vmax, 16vmax, 0) scale(1.1) rotate(10deg);
+        }
+        100% {
+          transform: translate3d(-22vmax, 6vmax, 0) scale(1.06) rotate(18deg);
+        }
+      }
+      @keyframes float-d {
+        0% {
+          transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+        }
+        50% {
+          transform: translate3d(12vmax, -12vmax, 0) scale(1.12) rotate(12deg);
+        }
+        100% {
+          transform: translate3d(6vmax, -20vmax, 0) scale(1.08) rotate(20deg);
+        }
+      }
+      @keyframes float-e {
+        0% {
+          transform: translate3d(0, 0, 0) scale(1.02) rotate(0deg);
+        }
+        50% {
+          transform: translate3d(-10vmax, 6vmax, 0) scale(1.12) rotate(-8deg);
+        }
+        100% {
+          transform: translate3d(-18vmax, 12vmax, 0) scale(1.06) rotate(-16deg);
+        }
+      }
+      @keyframes pulse {
+        0% {
+          opacity: 0.45;
+        }
+        50% {
+          opacity: 0.85;
+        }
+        100% {
+          opacity: 0.5;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .blob {
+          animation: none !important;
+        }
+      }
+
+      /* Glass primitives */
+      .glass {
+        background: var(--glass-bg);
+        -webkit-backdrop-filter: blur(20px) saturate(140%);
+        backdrop-filter: blur(20px) saturate(140%);
+        border: 1px solid var(--glass-stroke);
+        box-shadow: 0 10px 30px var(--glass-shadow);
+      }
+      .glass.soft {
+        -webkit-backdrop-filter: blur(16px) saturate(160%);
+        backdrop-filter: blur(16px) saturate(160%);
+      }
+      .glass-card {
+        border-radius: 16px;
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.25s ease, box-shadow 0.25s ease,
+          background 0.3s ease;
+        will-change: transform;
+      }
+      .glass-card::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          120% 50% at 50% -20%,
+          rgba(255, 255, 255, 0.35),
+          transparent 60%
+        );
+        pointer-events: none;
+        mix-blend-mode: soft-light;
+      }
+      .glass-card:hover {
+        transform: translateY(-2px) scale(1.01);
+        box-shadow: 0 16px 40px var(--glass-shadow);
+      }
+
+      .glass-card:active {
+        transform: translateY(-1px) scale(0.997);
+      }
+
+      .glass-chip {
+        border-radius: 999px;
+      }
+
+      /* Accent CTA with subtle glow */
+      .glass-cta {
+        background: linear-gradient(
+            to bottom right,
+            rgba(255, 255, 255, 0.65),
+            rgba(255, 255, 255, 0.4)
+          ),
+          linear-gradient(
+            120deg,
+            rgba(251, 191, 36, 0.35),
+            rgba(245, 158, 11, 0.2)
+          );
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        position: relative;
+      }
+      .dark .glass-cta {
+        background: linear-gradient(
+            to bottom right,
+            rgba(17, 19, 24, 0.6),
+            rgba(17, 19, 22, 0.4)
+          ),
+          linear-gradient(
+            120deg,
+            rgba(251, 191, 36, 0.2),
+            rgba(245, 158, 11, 0.1)
+          );
+        border: 1px solid rgba(255, 255, 255, 0.18);
+      }
+      .glass-cta::before {
+        content: '';
+        position: absolute;
+        inset: -2px;
+        border-radius: 18px;
+        background: radial-gradient(
+            60% 60% at 30% 0%,
+            rgba(251, 191, 36, 0.6),
+            transparent 60%
+          ),
+          radial-gradient(
+            50% 50% at 80% 100%,
+            rgba(245, 158, 11, 0.35),
+            transparent 60%
+          );
+        filter: blur(14px);
+        opacity: 0.45;
+        z-index: -1;
+      }
+
+      /* Text colors */
+      .text-high {
+        color: var(--text-high);
+      }
+      .text-med {
+        color: var(--text-med);
+      }
+
+      /* Focus-visible ring for accessibility */
+      .glass-card:focus-visible,
+      .social-chip:focus-visible,
+      #themeToggle:focus-visible,
+      #motionToggle:focus-visible {
+        outline: 2px solid rgba(99, 102, 241, 0.6);
+        outline-offset: 2px;
+        box-shadow: 0 0 0 6px rgba(99, 102, 241, 0.18);
+        transition: box-shadow 150ms ease;
+      }
+
+      /* Theme toggle icon cross-fade + tap */
+      #themeToggle {
+        position: relative;
+        transition: transform 160ms ease;
+      }
+      #themeToggle:active {
+        transform: scale(0.96);
+      }
+      #themeToggle .theme-icon {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        opacity: 0;
+        transform: rotate(-15deg) scale(0.9);
+        transition: opacity 180ms ease, transform 220ms ease;
+        pointer-events: none;
+      }
+      :root:not(.dark) #themeToggle .theme-icon-sun {
+        opacity: 1;
+        transform: rotate(0) scale(1);
+      }
+      .dark #themeToggle .theme-icon-moon {
+        opacity: 1;
+        transform: rotate(0) scale(1);
+      }
+
+      /* Motion toggle icon cross-fade + tap */
+      #motionToggle {
+        position: relative;
+        transition: transform 160ms ease, background 0.3s ease,
+          border-color 0.3s ease;
+        min-width: 100px;
+      }
+      #motionToggle:active {
+        transform: scale(0.96);
+      }
+      #motionToggle .motion-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%) rotate(-15deg) scale(0.9);
+        opacity: 0;
+        transition: opacity 180ms ease, transform 220ms ease;
+        pointer-events: none;
+      }
+      .motion-off #motionToggle {
+        background: var(--glass-bg);
+        border-color: var(--glass-stroke);
+      }
+      .motion-off #motionToggle .motion-icon-off {
+        opacity: 1;
+        transform: translateY(-50%) rotate(0) scale(1);
+      }
+      .motion-on #motionToggle {
+        background: linear-gradient(
+          to bottom right,
+          rgba(34, 197, 94, 0.2),
+          rgba(34, 197, 94, 0.1)
+        );
+        border-color: rgba(34, 197, 94, 0.4);
+        box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.2),
+          0 10px 30px var(--glass-shadow);
+        animation: holo-activate 0.4s ease-out;
+      }
+      .motion-on #motionToggle .motion-icon-on {
+        opacity: 1;
+        transform: translateY(-50%) rotate(0) scale(1);
+        color: rgb(34, 197, 94);
+      }
+      .motion-on #motionToggle span {
+        color: rgb(34, 197, 94);
+      }
+
+      /* Motion toggle activation animation */
+      @keyframes holo-activate {
+        0% {
+          transform: scale(1);
+          box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+        }
+        50% {
+          transform: scale(1.02);
+          box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.2);
+        }
+        100% {
+          transform: scale(1);
+          box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.2),
+            0 10px 30px var(--glass-shadow);
+        }
+      }
+
+      /* Debug panel styles */
+      #debugPanel {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 9999;
+        padding: 12px 16px;
+        background: var(--glass-bg);
+        -webkit-backdrop-filter: blur(20px) saturate(140%);
+        backdrop-filter: blur(20px) saturate(140%);
+        border: 1px solid var(--glass-stroke);
+        border-radius: 12px;
+        box-shadow: 0 8px 25px var(--glass-shadow);
+        font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas,
+          'Courier New', monospace;
+        font-size: 11px;
+        line-height: 1.4;
+        color: var(--text-high);
+        min-width: 200px;
+        opacity: 0;
+        transform: translateY(-10px);
+        transition: opacity 0.3s ease, transform 0.3s ease;
+        pointer-events: none;
+        user-select: none;
+      }
+      #debugPanel.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      #debugPanel h4 {
+        margin: 0 0 8px 0;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-high);
+        border-bottom: 1px solid var(--glass-stroke);
+        padding-bottom: 4px;
+      }
+      #debugPanel .debug-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 4px;
+      }
+      #debugPanel .debug-label {
+        color: var(--text-med);
+        margin-right: 8px;
+      }
+      #debugPanel .debug-value {
+        color: var(--text-high);
+        font-weight: 500;
+        text-align: right;
+        min-width: 60px;
+      }
+      #debugPanel .debug-status {
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+      #debugPanel .debug-status.active {
+        background: rgba(34, 197, 94, 0.2);
+        color: rgb(34, 197, 94);
+        border: 1px solid rgba(34, 197, 94, 0.3);
+      }
+      #debugPanel .debug-status.inactive {
+        background: rgba(239, 68, 68, 0.2);
+        color: rgb(239, 68, 68);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+      }
+
+      /* Social chips micro-interaction */
+      .social-chip {
+        transition: transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1),
+          filter 180ms ease;
+      }
+      @keyframes jelly {
+        0% {
+          transform: scale(1);
+        }
+        40% {
+          transform: scale(1.06);
+        }
+        70% {
+          transform: scale(1.02);
+        }
+        100% {
+          transform: scale(1.02);
+        }
+      }
+      .social-chip:hover {
+        animation: jelly 220ms ease-out forwards;
+        filter: brightness(1.08);
+      }
+
+      /* Entrance reveal */
+      @keyframes fade-up {
+        from {
+          opacity: 0;
+          transform: translateY(8px) scale(0.98);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+      .hero {
+        opacity: 0;
+        transform: translateY(6px) scale(0.99);
+      }
+      body.loaded .hero {
+        animation: fade-up 480ms cubic-bezier(0.22, 1, 0.36, 1) both;
+      }
+      #links > a {
+        opacity: 0;
+        transform: translateY(8px) scale(0.98);
+      }
+      body.loaded #links > a {
+        animation: fade-up 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+      }
+      body.loaded #links > a:nth-child(1) {
+        animation-delay: 60ms;
+      }
+      body.loaded #links > a:nth-child(2) {
+        animation-delay: 120ms;
+      }
+      body.loaded #links > a:nth-child(3) {
+        animation-delay: 180ms;
+      }
+      body.loaded #links > a:nth-child(4) {
+        animation-delay: 240ms;
+      }
+      body.loaded #links > a:nth-child(5) {
+        animation-delay: 300ms;
+      }
+      body.loaded #links > a:nth-child(6) {
+        animation-delay: 360ms;
+      }
+
+      /* Reduced motion: prefer no animation */
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation: none !important;
+          transition-duration: 0.01ms !important;
+        }
+        .hero,
+        #links > a {
+          opacity: 1 !important;
+          transform: none !important;
+        }
+      }
+
+      /* Fallback if no backdrop-filter support */
+      @supports not (
+        (-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))
+      ) {
+        .glass,
+        .glass-cta {
+          background: rgba(255, 255, 255, 0.9);
+        }
+        .dark .glass,
+        .dark .glass-cta {
+          background: rgba(17, 24, 39, 0.9);
+        }
+      }
+    </style>
   </head>
-  <body>
-    <h1>LinkStrifer.dev</h1>
-    <h2>Experiments</h2>
-    <ul>
-      <li>
-        <a href="http://strifer.link/html-video-autoplay-test/"
-          >HTML video autoplay test</a
+  <body
+    class="min-h-screen liquid-bg transition-all duration-300 flex items-center"
+  >
+    <!-- Debug Panel -->
+    <div id="debugPanel" class="glass">
+      <h4>🔍 Gyro Debug</h4>
+      <div class="debug-row">
+        <span class="debug-label">Status:</span>
+        <span id="debugStatus" class="debug-status inactive">Inactive</span>
+      </div>
+      <div class="debug-row">
+        <span class="debug-label">Device:</span>
+        <span id="debugDevice" class="debug-value">--</span>
+      </div>
+      <div class="debug-row">
+        <span class="debug-label">Permission:</span>
+        <span id="debugPermission" class="debug-value">--</span>
+      </div>
+      <div class="debug-row">
+        <span class="debug-label">Alpha (Z):</span>
+        <span id="debugAlpha" class="debug-value">--</span>
+      </div>
+      <div class="debug-row">
+        <span class="debug-label">Beta (X):</span>
+        <span id="debugBeta" class="debug-value">--</span>
+      </div>
+      <div class="debug-row">
+        <span class="debug-label">Gamma (Y):</span>
+        <span id="debugGamma" class="debug-value">--</span>
+      </div>
+      <div class="debug-row">
+        <span class="debug-label">BG Offset:</span>
+        <span id="debugBgOffset" class="debug-value">--</span>
+      </div>
+      <div class="debug-row">
+        <span class="debug-label">Card Offset:</span>
+        <span id="debugCardOffset" class="debug-value">--</span>
+      </div>
+    </div>
+
+    <div class="bg-anim" aria-hidden="true">
+      <span class="blob blob-1"></span>
+      <span class="blob blob-2"></span>
+      <span class="blob blob-3"></span>
+      <span class="blob blob-4"></span>
+      <span class="blob blob-5"></span>
+    </div>
+    <div class="container mx-auto px-4 py-8 max-w-md relative z-10">
+      <div class="flex justify-end gap-2 mb-6">
+        <button
+          id="motionToggle"
+          class="relative px-3 py-2 glass soft glass-chip text-high hover:brightness-110 transition-all duration-300 flex items-center gap-2"
+          aria-label="Toggle holograma effects"
+          style="display: none"
         >
-      </li>
-      <li>
-        <a href="http://strifer.link/flex-vertical-auto-margin/"
-          >Flex + Vertical auto margin (it works!)</a
+          <i class="fas fa-mobile-alt text-sm motion-icon motion-icon-off"></i>
+          <i
+            class="fas fa-mobile-screen-button text-sm motion-icon motion-icon-on"
+          ></i>
+          <span class="text-xs font-medium">Holograma</span>
+        </button>
+        <button
+          id="themeToggle"
+          class="relative p-2 glass soft glass-chip text-high hover:brightness-110 transition-all duration-300"
+          aria-label="Toggle theme"
         >
-      </li>
-      <li>
-        <a href="http://strifer.link/html-native-dialog-poc/">
-          dialog HTML Native Element
+          <i class="fas fa-sun text-lg theme-icon theme-icon-sun"></i>
+          <i class="fas fa-moon text-lg theme-icon theme-icon-moon"></i>
+        </button>
+      </div>
+
+      <div class="text-center mb-8 hero">
+        <div
+          class="w-24 h-24 mx-auto mb-4 glass soft glass-chip flex items-center justify-center"
+        >
+          <img
+            src="https://p16-sign-va.tiktokcdn.com/tos-maliva-avt-0068/595e031b0b18db17f78d8af30a493e02~tplv-tiktokx-cropcenter:1080:1080.jpeg?dr=14579&refresh_token=e15dc7b4&x-expires=1755183600&x-signature=XzxbxuZ4EtsUeRUzkw8OeJVEWZI%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=maliva"
+            alt="Link Strifer profile"
+            class="w-20 h-20 rounded-full object-cover"
+          />
+        </div>
+        <h1 class="text-2xl font-bold text-high mb-2">@LinkStrifer</h1>
+        <p class="text-med text-sm mb-4">
+          Desarrollador y Creador de Contenido.
+        </p>
+
+        <div class="flex justify-center space-x-4 mb-6">
+          <a
+            href="https://youtube.com/@linkstrifer1"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="w-10 h-10 glass soft glass-chip social-chip flex items-center justify-center text-high hover:brightness-110 transition-all duration-300"
+            aria-label="YouTube"
+          >
+            <i class="fab fa-youtube"></i>
+          </a>
+          <a
+            href="https://tiktok.com/@linkstrifer"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="w-10 h-10 glass soft glass-chip social-chip flex items-center justify-center text-high hover:brightness-110 transition-all duration-300"
+            aria-label="TikTok"
+          >
+            <i class="fab fa-tiktok"></i>
+          </a>
+          <a
+            href="https://www.instagram.com/linkstrifer/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="w-10 h-10 glass soft glass-chip social-chip flex items-center justify-center text-high hover:brightness-110 transition-all duration-300"
+            aria-label="Instagram"
+          >
+            <i class="fab fa-instagram"></i>
+          </a>
+        </div>
+      </div>
+
+      <div id="links" class="space-y-4">
+        <a
+          href="https://productos.strifer.link/"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="block w-full p-4 glass glass-card glass-cta rounded-xl text-center font-semibold"
+        >
+          <span class="text-high">🔥 Productos Recomendados 🔥</span>
         </a>
-      </li>
-    </ul>
+
+        <a
+          href="https://youtube.com/@linkstrifer1"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="block w-full p-4 glass glass-card rounded-xl text-center font-semibold text-high"
+        >
+          <i class="fab fa-youtube mr-2 text-red-600 dark:text-red-400"></i>
+          YouTube
+        </a>
+
+        <a
+          href="https://tiktok.com/@linkstrifer"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="block w-full p-4 glass glass-card rounded-xl text-center font-semibold text-high"
+        >
+          <i class="fab fa-tiktok mr-2 text-black dark:text-white"></i>
+          TikTok
+        </a>
+
+        <a
+          href="https://www.instagram.com/linkstrifer/"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="block w-full p-4 glass glass-card rounded-xl text-center font-semibold text-high"
+        >
+          <i class="fab fa-instagram mr-2 text-pink-600 dark:text-pink-400"></i>
+          Instagram
+        </a>
+
+        <a
+          href="https://elordendemarvel.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="block w-full p-4 glass glass-card rounded-xl text-center font-semibold text-high"
+        >
+          <i class="fas fa-mask mr-2 text-red-600 dark:text-red-400"></i>
+          Línea de Tiempo de Marvel
+        </a>
+
+        <a
+          href="mailto:biz@strifer.link"
+          class="block w-full p-4 glass glass-card rounded-xl text-center font-semibold text-high"
+        >
+          <i class="fas fa-envelope mr-2 text-blue-600 dark:text-blue-400"></i>
+          Negocios?
+        </a>
+      </div>
+
+      <div class="text-center mt-8 text-med text-xs">
+        <p>&copy; 2025 LinkStrifer. Todos los derechos reservados.</p>
+      </div>
+    </div>
+
+    <script>
+      // Device Orientation Parallax System
+      class DeviceOrientationParallax {
+        constructor() {
+          this.orientation = null;
+          this.error = null;
+          this.isActive = false;
+          this.onDeviceOrientationHandler = this.onDeviceOrientation.bind(this);
+
+          // Motion state classes for UI
+          this.motionStateClasses = {
+            off: 'motion-off',
+            on: 'motion-on',
+          };
+
+          // Initialize with motion off
+          document.documentElement.classList.add(this.motionStateClasses.off);
+        }
+
+        roundAngle(angle) {
+          if (typeof angle !== 'number') return angle;
+          return +angle.toFixed(2);
+        }
+
+        onDeviceOrientation(event) {
+          const angles = {
+            alpha: this.roundAngle(event.alpha),
+            beta: this.roundAngle(event.beta),
+            gamma: this.roundAngle(event.gamma),
+            absolute: event.absolute,
+          };
+
+          this.orientation = angles;
+          this.updateParallaxEffects(angles);
+        }
+
+        updateParallaxEffects(angles) {
+          if (
+            !angles ||
+            typeof angles.beta !== 'number' ||
+            typeof angles.gamma !== 'number'
+          ) {
+            return;
+          }
+
+          // Normalize the angles for smoother parallax
+          // Beta: -180 to 180 (device tilt forward/backward)
+          // Gamma: -90 to 90 (device tilt left/right)
+          const normalizedBeta = Math.max(-45, Math.min(45, angles.beta)) / 45; // -1 to 1
+          const normalizedGamma =
+            Math.max(-45, Math.min(45, angles.gamma)) / 45; // -1 to 1
+
+          // Background parallax (more subtle)
+          const bgOffsetX = normalizedGamma * 12; // max 12px offset
+          const bgOffsetY = normalizedBeta * 8; // max 8px offset
+
+          // Update CSS variables for background
+          const liquid = document.querySelector('.liquid-bg');
+          if (liquid) {
+            liquid.style.setProperty('--bg-tx', `${bgOffsetX.toFixed(2)}px`);
+            liquid.style.setProperty('--bg-ty', `${bgOffsetY.toFixed(2)}px`);
+          }
+
+          // Card parallax (more pronounced)
+          const cardOffsetX = normalizedGamma * 8; // max 8px offset
+          const cardOffsetY = normalizedBeta * 6; // max 6px offset
+
+          // Apply parallax to glass cards
+          const cards = document.querySelectorAll('.glass-card');
+          cards.forEach((card, index) => {
+            // Different layers move at different speeds
+            const multiplier = 1 + index * 0.1; // Slight variation per card
+            const offsetX = cardOffsetX * multiplier;
+            const offsetY = cardOffsetY * multiplier;
+
+            card.style.transform = `translate3d(${offsetX.toFixed(
+              2
+            )}px, ${offsetY.toFixed(2)}px, 0)`;
+          });
+
+          // Blob parallax (most pronounced)
+          const blobs = document.querySelectorAll('.blob');
+          blobs.forEach((blob, index) => {
+            const multiplier = 0.8 + index * 0.15; // Different speed per blob
+            const offsetX = normalizedGamma * 20 * multiplier;
+            const offsetY = normalizedBeta * 15 * multiplier;
+
+            // Get existing transform and add our parallax
+            const currentTransform = blob.style.transform || '';
+            const parallaxTransform = `translate3d(${offsetX.toFixed(
+              2
+            )}px, ${offsetY.toFixed(2)}px, 0)`;
+
+            // If there's an existing transform, we need to combine them
+            if (currentTransform.includes('translate3d')) {
+              blob.style.transform = currentTransform.replace(
+                /translate3d\([^)]*\)/,
+                parallaxTransform
+              );
+            } else {
+              blob.style.transform =
+                `${parallaxTransform} ${currentTransform}`.trim();
+            }
+          });
+
+          // Update debug panel
+          this.updateDebugPanel(angles, {
+            bgOffset: { x: bgOffsetX, y: bgOffsetY },
+            cardOffset: { x: cardOffsetX, y: cardOffsetY },
+            normalized: { beta: normalizedBeta, gamma: normalizedGamma },
+          });
+        }
+
+        updateDebugPanel(angles, offsets) {
+          const debugPanel = document.getElementById('debugPanel');
+          const debugStatus = document.getElementById('debugStatus');
+          const debugDevice = document.getElementById('debugDevice');
+          const debugPermission = document.getElementById('debugPermission');
+          const debugAlpha = document.getElementById('debugAlpha');
+          const debugBeta = document.getElementById('debugBeta');
+          const debugGamma = document.getElementById('debugGamma');
+          const debugBgOffset = document.getElementById('debugBgOffset');
+          const debugCardOffset = document.getElementById('debugCardOffset');
+
+          if (!debugPanel) return;
+
+          // Always show device info
+          const isIOS = DeviceOrientationParallax.isIOS();
+          const needsPermission = DeviceOrientationParallax.needsPermission();
+          debugDevice.textContent = isIOS ? 'iOS' : 'Other';
+          debugPermission.textContent = needsPermission
+            ? 'Required'
+            : 'Not Required';
+
+          // Update status and motion data
+          if (this.isActive) {
+            debugStatus.textContent = 'Active';
+            debugStatus.className = 'debug-status active';
+
+            // Update orientation values
+            debugAlpha.textContent =
+              angles.alpha !== null ? `${angles.alpha}°` : '--';
+            debugBeta.textContent =
+              angles.beta !== null ? `${angles.beta}°` : '--';
+            debugGamma.textContent =
+              angles.gamma !== null ? `${angles.gamma}°` : '--';
+
+            // Update offset values
+            debugBgOffset.textContent = `${offsets.bgOffset.x.toFixed(
+              1
+            )}, ${offsets.bgOffset.y.toFixed(1)}`;
+            debugCardOffset.textContent = `${offsets.cardOffset.x.toFixed(
+              1
+            )}, ${offsets.cardOffset.y.toFixed(1)}`;
+          } else {
+            debugStatus.textContent = 'Inactive';
+            debugStatus.className = 'debug-status inactive';
+
+            // Reset debug values
+            debugAlpha.textContent = '--';
+            debugBeta.textContent = '--';
+            debugGamma.textContent = '--';
+            debugBgOffset.textContent = '--';
+            debugCardOffset.textContent = '--';
+          }
+        }
+
+        async requestAccess() {
+          if (!window.DeviceOrientationEvent) {
+            this.error = new Error(
+              'Device orientation event is not supported by your browser'
+            );
+            return false;
+          }
+
+          // Check if permission is required (iOS 13+)
+          if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+            let permission;
+            try {
+              permission = await DeviceOrientationEvent.requestPermission();
+            } catch (err) {
+              this.error = new Error(
+                err?.message ||
+                  'Unknown error requesting device orientation permission'
+              );
+              console.error('Permission request failed:', err);
+              return false;
+            }
+
+            if (permission !== 'granted') {
+              this.error = new Error(
+                'Device orientation permission was denied'
+              );
+              console.warn('Permission denied:', permission);
+              return false;
+            }
+          }
+
+          // Add event listener
+          window.addEventListener(
+            'deviceorientation',
+            this.onDeviceOrientationHandler,
+            { passive: true }
+          );
+          this.isActive = true;
+
+          // Update UI state
+          document.documentElement.classList.remove(
+            this.motionStateClasses.off
+          );
+          document.documentElement.classList.add(this.motionStateClasses.on);
+
+          return true;
+        }
+
+        revokeAccess() {
+          window.removeEventListener(
+            'deviceorientation',
+            this.onDeviceOrientationHandler
+          );
+          this.orientation = null;
+          this.isActive = false;
+
+          // Reset all parallax effects
+          const liquid = document.querySelector('.liquid-bg');
+          if (liquid) {
+            liquid.style.setProperty('--bg-tx', '0px');
+            liquid.style.setProperty('--bg-ty', '0px');
+          }
+
+          // Reset card transforms
+          const cards = document.querySelectorAll('.glass-card');
+          cards.forEach((card) => {
+            card.style.transform = '';
+          });
+
+          // Reset blob transforms (keep their animations)
+          const blobs = document.querySelectorAll('.blob');
+          blobs.forEach((blob) => {
+            blob.style.transform = '';
+          });
+
+          // Update debug panel
+          this.updateDebugPanel(
+            { alpha: null, beta: null, gamma: null },
+            {
+              bgOffset: { x: 0, y: 0 },
+              cardOffset: { x: 0, y: 0 },
+            }
+          );
+
+          // Update UI state
+          document.documentElement.classList.remove(this.motionStateClasses.on);
+          document.documentElement.classList.add(this.motionStateClasses.off);
+        }
+
+        // Check if device orientation is supported and if permission is needed
+        static isSupported() {
+          return typeof window.DeviceOrientationEvent !== 'undefined';
+        }
+
+        static needsPermission() {
+          return (
+            typeof DeviceOrientationEvent !== 'undefined' &&
+            typeof DeviceOrientationEvent.requestPermission === 'function'
+          );
+        }
+
+        static isIOS() {
+          return (
+            /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+            (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+          );
+        }
+      }
+
+      // Main app initialization
+      let themeToggle;
+      let motionToggle;
+      let deviceParallax;
+      const html = document.documentElement;
+
+      document.addEventListener('DOMContentLoaded', function () {
+        themeToggle = document.getElementById('themeToggle');
+        motionToggle = document.getElementById('motionToggle');
+
+        // Initialize device orientation parallax
+        deviceParallax = new DeviceOrientationParallax();
+
+        // Initialize debug panel with device info
+        deviceParallax.updateDebugPanel(
+          { alpha: null, beta: null, gamma: null },
+          { bgOffset: { x: 0, y: 0 }, cardOffset: { x: 0, y: 0 } }
+        );
+
+        // Always show debug panel for development
+        const debugPanel = document.getElementById('debugPanel');
+        if (debugPanel) {
+          debugPanel.classList.add('visible');
+        }
+
+        // Show motion toggle only if device orientation is supported
+        if (DeviceOrientationParallax.isSupported()) {
+          motionToggle.style.display = 'block';
+        }
+
+        // Theme toggle functionality
+        themeToggle.addEventListener('click', () => {
+          html.classList.toggle('dark');
+          const isDark = html.classList.contains('dark');
+          localStorage.setItem('colorMode', isDark ? 'dark' : 'light');
+        });
+
+        // Motion toggle functionality
+        motionToggle.addEventListener('click', async (event) => {
+          // Prevent any default behavior
+          event.preventDefault();
+
+          if (deviceParallax.isActive) {
+            deviceParallax.revokeAccess();
+          } else {
+            try {
+              const success = await deviceParallax.requestAccess();
+              if (!success && deviceParallax.error) {
+                console.warn(
+                  'Motion access failed:',
+                  deviceParallax.error.message
+                );
+                // Show user-friendly error message
+                alert(`Motion access failed: ${deviceParallax.error.message}`);
+              }
+            } catch (error) {
+              console.error(
+                'Unexpected error requesting motion access:',
+                error
+              );
+              alert('Failed to enable motion effects. Please try again.');
+            }
+          }
+        });
+
+        window
+          .matchMedia('(prefers-color-scheme: dark)')
+          .addEventListener('change', (e) => {
+            if (!localStorage.getItem('colorMode')) {
+              html.classList.toggle('dark', e.matches);
+            }
+          });
+
+        // Trigger entrance animations after first paint
+        const reduceMotion = window.matchMedia(
+          '(prefers-reduced-motion: reduce)'
+        ).matches;
+        if (!reduceMotion) {
+          requestAnimationFrame(() => {
+            document.body.classList.add('loaded');
+          });
+        } else {
+          document.body.classList.add('loaded');
+        }
+
+        // Gentle background parallax using CSS variables (mouse-based fallback)
+        const liquid = document.querySelector('.liquid-bg');
+        if (liquid && !reduceMotion) {
+          let rafId = null;
+          let targetX = 0,
+            targetY = 0;
+          let currX = 0,
+            currY = 0;
+
+          const onMove = (e) => {
+            // Only apply mouse parallax if device orientation is not active
+            if (deviceParallax.isActive) return;
+
+            const xRatio = e.clientX / window.innerWidth - 0.5;
+            const yRatio = e.clientY / window.innerHeight - 0.5;
+            targetX = xRatio * 6; // max 6px offset
+            targetY = yRatio * 6;
+            if (!rafId) rafId = requestAnimationFrame(tick);
+          };
+
+          const tick = () => {
+            // Only apply mouse parallax if device orientation is not active
+            if (deviceParallax.isActive) {
+              rafId = null;
+              return;
+            }
+
+            const k = 0.08; // easing
+            currX += (targetX - currX) * k;
+            currY += (targetY - currY) * k;
+            liquid.style.setProperty('--bg-tx', currX.toFixed(2) + 'px');
+            liquid.style.setProperty('--bg-ty', currY.toFixed(2) + 'px');
+            if (
+              Math.abs(currX - targetX) > 0.1 ||
+              Math.abs(currY - targetY) > 0.1
+            ) {
+              rafId = requestAnimationFrame(tick);
+            } else {
+              rafId = null;
+            }
+          };
+
+          window.addEventListener('mousemove', onMove, { passive: true });
+        }
+      });
+    </script>
   </body>
 </html>
