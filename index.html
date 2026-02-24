@@ -15,21 +15,7 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
     />
-    <script>
-      (function () {
-        const html = document.documentElement;
-        const savedMode = localStorage.getItem('colorMode');
 
-        if (savedMode) {
-          html.classList.toggle('dark', savedMode === 'dark');
-        } else {
-          const prefersDark = window.matchMedia(
-            '(prefers-color-scheme: dark)',
-          ).matches;
-          html.classList.toggle('dark', prefersDark);
-        }
-      })();
-    </script>
     <style>
       @keyframes fadeUp {
         from {
@@ -214,20 +200,6 @@
     class="bg-stone-100 dark:bg-black text-black dark:text-stone-100 transition-colors duration-300"
   >
     <div class="w-full px-5 py-8">
-      <div class="flex gap-2 justify-end mb-5 max-w-2xl mx-auto">
-        <button
-          id="themeToggle"
-          class="w-11 h-11 rounded-full bg-white dark:bg-stone-900 shadow-sm hover:shadow-md hover:scale-110 transition-all active:scale-95 flex items-center justify-center cursor-pointer border-none"
-          aria-label="Toggle theme"
-        >
-          <i class="fas fa-sun theme-icon theme-icon-sun text-lg"></i>
-          <i
-            class="fas fa-moon theme-icon theme-icon-moon text-lg"
-            style="display: none"
-          ></i>
-        </button>
-      </div>
-
       <header class="header text-center max-w-2xl mx-auto mb-10">
         <img
           src="profile.webp"
@@ -444,8 +416,6 @@
 
     <script>
       const html = document.documentElement;
-      const themeToggle = document.getElementById('themeToggle');
-      const themeIcons = document.querySelectorAll('.theme-icon');
 
       function addRandomBackgrounds() {
         const cards = document.querySelectorAll('.card-link');
@@ -477,34 +447,7 @@
         });
       }
 
-      themeToggle.addEventListener('click', () => {
-        html.classList.toggle('dark');
-        const isDark = html.classList.contains('dark');
-        localStorage.setItem('colorMode', isDark ? 'dark' : 'light');
-        updateThemeIcons();
-      });
-
-      function updateThemeIcons() {
-        const isDark = html.classList.contains('dark');
-        document.querySelector('.theme-icon-sun').style.display = isDark
-          ? 'none'
-          : 'block';
-        document.querySelector('.theme-icon-moon').style.display = isDark
-          ? 'block'
-          : 'none';
-      }
-
-      window
-        .matchMedia('(prefers-color-scheme: dark)')
-        .addEventListener('change', (e) => {
-          if (!localStorage.getItem('colorMode')) {
-            html.classList.toggle('dark', e.matches);
-            updateThemeIcons();
-          }
-        });
-
       window.addEventListener('DOMContentLoaded', () => {
-        updateThemeIcons();
         addRandomBackgrounds();
       });
 
