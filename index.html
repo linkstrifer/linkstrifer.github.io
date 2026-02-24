@@ -169,15 +169,17 @@
       }
 
       .icon-blur {
-        position: absolute;
-        inset: 0;
-        display: flex;
         align-items: center;
-        justify-content: center;
-        font-size: 32px;
-        opacity: 0.3;
+        display: flex;
         filter: blur(12px) saturate(1.2) brightness(1.1);
-        transform: scale(1.2);
+        font-size: 32px;
+        inset: 0;
+        justify-content: center;
+        opacity: 0.3;
+        position: absolute;
+        translate: calc(var(--pointer-x, -10) * 20cqi)
+          calc(var(--pointer-y, -10) * 20cqh);
+        transform: scale(10);
       }
 
       .icon-main {
@@ -513,6 +515,26 @@
       } else {
         addRandomBackgrounds();
       }
+
+      const cards = document.querySelectorAll('.card');
+
+      document.addEventListener('pointermove', (event) => {
+        cards.forEach((article) => {
+          const rect = article.getBoundingClientRect();
+
+          const centerX = rect.left + rect.width / 2;
+          const centerY = rect.top + rect.height / 2;
+
+          const relativeX = event.clientX - centerX;
+          const relativeY = event.clientY - centerY;
+
+          const x = relativeX / (rect.width / 2);
+          const y = relativeY / (rect.height / 2);
+
+          article.style.setProperty('--pointer-x', x.toFixed(3));
+          article.style.setProperty('--pointer-y', y.toFixed(3));
+        });
+      });
     </script>
   </body>
 </html>
