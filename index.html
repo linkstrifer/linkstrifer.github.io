@@ -1,449 +1,1154 @@
 <!doctype html>
-<html lang="en">
+<html lang="es" data-theme="a">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <meta name="color-scheme" content="light dark" />
     <title>@LinkStrifer</title>
     <meta
       name="description"
       content="Encuentra todos los enlaces de LinkStrifer en un solo lugar"
     />
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Share+Tech+Mono&family=VT323&display=swap"
+      rel="stylesheet"
+    />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
     />
-
     <style>
+      /* ── THEME VARIABLES ──────────────────────────────────── */
+
+      :root,
+      [data-theme='a'] {
+        --font-display: 'JetBrains Mono', 'Courier New', monospace;
+        --font-body: 'JetBrains Mono', 'Courier New', monospace;
+        --bg: #0a0a0a;
+        --bg-card: #111111;
+        --bg-card-h: #161616;
+        --border: #1c1c1c;
+        --text: #e0e0e0;
+        --text-muted: #454545;
+        --text-sub: #2e6e2e;
+        --accent: #00ff41;
+        --accent-dim: rgba(0, 255, 65, 0.06);
+        --accent-glow: rgba(0, 255, 65, 0.22);
+        --dot-r: #ff5f57;
+        --dot-y: #febc2e;
+        --dot-g: #28c840;
+        --scanline: rgba(0, 255, 65, 0.025);
+        --noise: 0.025;
+        --r: 10px;
+        --card-bw: 1px;
+        --ts-bg: rgba(17, 17, 17, 0.93);
+        --ts-border: rgba(255, 255, 255, 0.07);
+        --ts-text: #444;
+        --ts-act: #ddd;
+      }
+
+      [data-theme='d'] {
+        --font-display: 'VT323', 'Share Tech Mono', monospace;
+        --font-body: 'Share Tech Mono', monospace;
+        --bg: #080012;
+        --bg-card: #0d0022;
+        --bg-card-h: #130030;
+        --border: #210055;
+        --text: #ddd0ff;
+        --text-muted: #4a2880;
+        --text-sub: #7040c0;
+        --accent: #00ffff;
+        --accent-dim: rgba(0, 255, 255, 0.07);
+        --accent-glow: rgba(0, 255, 255, 0.35);
+        --dot-r: #ff0099;
+        --dot-y: #ffdd00;
+        --dot-g: #00ff99;
+        --scanline: rgba(0, 255, 255, 0.022);
+        --noise: 0.015;
+        --r: 0px;
+        --card-bw: 1px;
+        --ts-bg: rgba(8, 0, 18, 0.97);
+        --ts-border: rgba(0, 255, 255, 0.22);
+        --ts-text: #4a2880;
+        --ts-act: #00ffff;
+      }
+
+      /* ── RESET & BASE ─────────────────────────────────────── */
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        cursor: none;
+      }
+      button {
+        all: unset;
+        cursor: none;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        font-family: var(--font-body);
+        background-color: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        overflow-x: hidden;
+        transition:
+          background-color 0.45s,
+          color 0.45s;
+      }
+
+      body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background: repeating-linear-gradient(
+          0deg,
+          var(--scanline) 0px,
+          transparent 1px,
+          transparent 3px
+        );
+        pointer-events: none;
+        z-index: 100;
+        transition: background 0.45s;
+      }
+
+      body::after {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        background-size: 256px 256px;
+        pointer-events: none;
+        z-index: 99;
+        opacity: var(--noise);
+        transition: opacity 0.45s;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      /* ── CURSOR ───────────────────────────────────────────── */
+
+      .cursor {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 10px;
+        height: 18px;
+        background: var(--accent);
+        pointer-events: none;
+        z-index: 9999;
+        will-change: transform;
+        animation: blink 1.1s step-end infinite;
+        transition:
+          background 0.4s,
+          opacity 0.2s;
+      }
+
+      /* ── KEYFRAMES ────────────────────────────────────────── */
+
+      @keyframes blink {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.4;
+        }
+      }
       @keyframes fadeUp {
         from {
           opacity: 0;
-          transform: translateY(16px);
+          transform: translateY(18px);
         }
         to {
           opacity: 1;
           transform: translateY(0);
         }
       }
-
-      .cards-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-        gap: 16px;
-      }
-
-      @media (min-width: 700px) {
-        .cards-grid {
-          grid-template-rows: auto;
-          grid-template-columns: repeat(12, 1fr);
-          grid-auto-flow: dense;
-          max-width: 1200px;
-          margin: 0 auto;
+      @keyframes glitch-card {
+        0% {
+          transform: translateY(-4px) translateX(0) skewX(0deg);
+        }
+        20% {
+          transform: translateY(-4px) translateX(4px) skewX(1.2deg);
+        }
+        40% {
+          transform: translateY(-2px) translateX(-3px) skewX(-0.8deg);
+        }
+        60% {
+          transform: translateY(-4px) translateX(3px) skewX(0.5deg);
+        }
+        80% {
+          transform: translateY(-3px) translateX(-2px) skewX(0deg);
+        }
+        100% {
+          transform: translateY(-4px) translateX(0) skewX(0deg);
         }
       }
 
-      @media (min-width: 1200px) {
-        .cards-grid {
-          grid-template-rows: auto;
-          grid-template-columns: repeat(12, 1fr);
-          grid-auto-flow: dense;
-          max-width: 1200px;
-          margin: 0 auto;
-        }
+      /* ── LAYOUT ───────────────────────────────────────────── */
+
+      .page {
+        max-width: 920px;
+        margin: 0 auto;
+        padding: 44px 20px 64px;
       }
 
-      .card {
+      /* ── THEME SWITCHER ───────────────────────────────────── */
+
+      .theme-switcher {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 200;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 6px;
         opacity: 0;
-        animation: fadeUp 0.6s ease-out forwards;
-        outline: 1px solid transparent;
+        animation: fadeUp 0.5s ease-out 0.15s forwards;
       }
 
-      .card:nth-child(1) {
-        animation-delay: 0.15s;
-      }
-      .card:nth-child(2) {
-        animation-delay: 0.25s;
-      }
-      .card:nth-child(3) {
-        animation-delay: 0.35s;
-      }
-      .card:nth-child(4) {
-        animation-delay: 0.45s;
-      }
-      .card:nth-child(5) {
-        animation-delay: 0.55s;
+      .ts-label {
+        font-size: 10px;
+        font-family: var(--font-body);
+        color: var(--ts-text);
+        letter-spacing: 0.1em;
+        transition:
+          color 0.45s,
+          font-family 0.45s;
       }
 
-      .card.card-bg::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.4);
-        border-radius: 20px;
-        pointer-events: none;
-      }
-
-      .icon-wrapper {
-        position: relative;
-        width: 48px;
-        height: 48px;
-        flex-shrink: 0;
-      }
-
-      .icon-blur {
-        align-items: center;
+      .ts-pills {
         display: flex;
-        filter: blur(12px) saturate(1.2) brightness(1.1);
-        font-size: 32px;
-        inset: 0;
-        justify-content: center;
-        opacity: 0.3;
-        position: absolute;
-        translate: calc(var(--pointer-x, -10) * 20cqi)
-          calc(var(--pointer-y, -10) * 20cqh);
-        transform: scale(10);
+        gap: 3px;
+        background: var(--ts-bg);
+        border: 1px solid var(--ts-border);
+        border-radius: 9px;
+        padding: 5px 7px;
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        transition:
+          background 0.45s,
+          border-color 0.2s;
       }
 
-      .icon-main {
-        position: absolute;
-        inset: 0;
+      .ts-pill {
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 24px;
-        z-index: 1;
+        width: 30px;
+        height: 30px;
+        font-size: 12px;
+        font-weight: 700;
+        font-family: var(--font-body);
+        color: var(--ts-text);
+        border-radius: 6px;
+        transition:
+          color 0.2s,
+          background 0.2s,
+          font-family 0.45s;
+        letter-spacing: 0.04em;
       }
+
+      .ts-pill:hover {
+        color: var(--accent);
+        background: var(--accent-dim);
+      }
+      .ts-pill.active {
+        color: var(--ts-act);
+        background: var(--accent-dim);
+        box-shadow: inset 0 0 0 1px var(--accent);
+      }
+
+      /* ── HEADER ───────────────────────────────────────────── */
 
       .header {
-        animation: fadeUp 0.6s ease-out 0.1s forwards;
+        margin-bottom: 40px;
         opacity: 0;
+        animation: fadeUp 0.6s ease-out 0.3s forwards;
       }
+
+      .terminal-chrome {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding-bottom: 14px;
+        margin-bottom: 20px;
+        border-bottom: 1px solid var(--border);
+        transition:
+          border-color 0.45s,
+          opacity 0.45s;
+      }
+
+      .chrome-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+      .chrome-dot.r {
+        background: var(--dot-r);
+      }
+      .chrome-dot.y {
+        background: var(--dot-y);
+      }
+      .chrome-dot.g {
+        background: var(--dot-g);
+      }
+      .chrome-title {
+        font-size: 11px;
+        color: var(--text-muted);
+        letter-spacing: 0.04em;
+        margin-left: 6px;
+        transition: color 0.45s;
+      }
+
+      .header-inner {
+        display: flex;
+        align-items: flex-start;
+        gap: 28px;
+      }
+
+      .profile-img {
+        width: 96px;
+        height: 96px;
+        border-radius: var(--r);
+        border: 2px solid var(--accent);
+        object-fit: cover;
+        flex-shrink: 0;
+        display: block;
+        box-shadow: 0 0 24px var(--accent-glow);
+        transition:
+          border-color 0.45s,
+          box-shadow 0.45s,
+          border-radius 0.45s,
+          width 0.45s,
+          height 0.45s;
+      }
+
+      .header-content {
+        flex: 1;
+        padding-top: 4px;
+      }
+
+      .prompt-line {
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-bottom: 6px;
+        letter-spacing: 0.03em;
+        transition:
+          color 0.45s,
+          opacity 0.45s,
+          max-height 0.45s;
+      }
+      .prompt-line .cmd {
+        color: var(--accent);
+        transition: color 0.45s;
+      }
+
+      .username {
+        font-size: 30px;
+        font-weight: 700;
+        color: var(--text);
+        letter-spacing: -0.025em;
+        line-height: 1;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        font-family: var(--font-display);
+        transition:
+          color 0.45s,
+          font-size 0.45s,
+          letter-spacing 0.45s,
+          font-style 0.45s,
+          font-family 0.45s;
+      }
+      .username-cursor {
+        display: inline-block;
+        width: 3px;
+        height: 30px;
+        background: var(--accent);
+        animation: blink 1.1s step-end infinite;
+        flex-shrink: 0;
+        transition:
+          background 0.45s,
+          opacity 0.45s;
+      }
+
+      .bio {
+        font-size: 12px;
+        color: var(--text-sub);
+        margin-bottom: 18px;
+        font-style: italic;
+        letter-spacing: 0.02em;
+        font-family: var(--font-body);
+        transition:
+          color 0.45s,
+          font-size 0.45s,
+          letter-spacing 0.45s,
+          font-style 0.45s,
+          font-family 0.45s;
+      }
+
+      .social-links {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .social-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11px;
+        font-family: var(--font-body);
+        color: var(--text-muted);
+        border: 1px solid var(--border);
+        border-radius: var(--r);
+        padding: 5px 11px;
+        transition:
+          color 0.2s,
+          border-color 0.2s,
+          background 0.2s,
+          box-shadow 0.2s,
+          border-radius 0.45s,
+          font-family 0.45s;
+      }
+      .social-link:hover {
+        color: var(--accent);
+        border-color: var(--accent);
+        background: var(--accent-dim);
+        box-shadow: 0 0 10px var(--accent-glow);
+      }
+
+      /* ── SECTION LABELS ───────────────────────────────────── */
+
+      .section-label {
+        font-size: 11px;
+        font-family: var(--font-body);
+        color: var(--text-muted);
+        letter-spacing: 0.1em;
+        margin-bottom: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        opacity: 0;
+        animation: fadeUp 0.5s ease-out forwards;
+        transition:
+          color 0.45s,
+          font-size 0.45s,
+          letter-spacing 0.45s,
+          font-weight 0.45s,
+          font-family 0.45s,
+          padding 0.45s;
+      }
+      .sl-prefix {
+        color: var(--accent);
+        transition: color 0.45s;
+        flex-shrink: 0;
+      }
+      .section-label::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+        transition:
+          background 0.45s,
+          display 0.45s;
+      }
+
+      /* ── GRIDS ────────────────────────────────────────────── */
+
+      .featured-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 10px;
+        transition: grid-template-columns 0.45s;
+      }
+      .links-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+        gap: 8px;
+      }
+
+      /* ── CARD BASE ────────────────────────────────────────── */
+
+      .card {
+        background: var(--bg-card);
+        border: var(--card-bw) solid var(--border);
+        border-radius: var(--r);
+        overflow: hidden;
+        opacity: 0;
+        animation: fadeUp 0.5s ease-out forwards;
+        transition:
+          background 0.45s,
+          border-color 0.2s,
+          box-shadow 0.2s,
+          transform 0.2s,
+          border-radius 0.45s,
+          border-width 0.45s;
+      }
+      .card--loaded {
+        opacity: 1;
+        animation: none;
+      }
+      .card:hover {
+        border-color: var(--accent);
+        box-shadow:
+          0 0 22px var(--accent-glow),
+          inset 0 0 22px var(--accent-dim);
+        background: var(--bg-card-h);
+        transform: translateY(-3px);
+      }
+
+      .featured-grid .card:nth-child(1) {
+        animation-delay: 0.55s;
+      }
+      .featured-grid .card:nth-child(2) {
+        animation-delay: 0.65s;
+      }
+      .links-grid .card:nth-child(1) {
+        animation-delay: 0.72s;
+      }
+      .links-grid .card:nth-child(2) {
+        animation-delay: 0.78s;
+      }
+      .links-grid .card:nth-child(3) {
+        animation-delay: 0.84s;
+      }
+      .links-grid .card:nth-child(4) {
+        animation-delay: 0.9s;
+      }
+      .links-grid .card:nth-child(5) {
+        animation-delay: 0.96s;
+      }
+      .links-grid .card:nth-child(6) {
+        animation-delay: 1.02s;
+      }
+
+      /* ── CARD FEATURED ────────────────────────────────────── */
+
+      .card-featured {
+        display: flex;
+        flex-direction: column;
+        min-height: 190px;
+      }
+
+      .card-win-bar {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.015);
+        flex-shrink: 0;
+        transition:
+          border-color 0.45s,
+          background 0.45s,
+          opacity 0.45s,
+          max-height 0.45s;
+      }
+      .win-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+      .win-dot.r {
+        background: var(--dot-r);
+      }
+      .win-dot.y {
+        background: var(--dot-y);
+      }
+      .win-dot.g {
+        background: var(--dot-g);
+      }
+      .win-title {
+        font-size: 11px;
+        color: var(--text-muted);
+        margin-left: 4px;
+        letter-spacing: 0.03em;
+        transition: color 0.45s;
+      }
+
+      .card-featured-body {
+        padding: 20px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .card-cmd {
+        font-size: 11px;
+        color: var(--text-muted);
+        margin-bottom: 10px;
+        letter-spacing: 0.03em;
+        transition:
+          color 0.45s,
+          opacity 0.45s,
+          max-height 0.45s,
+          font-family 0.45s;
+      }
+      .card-cmd .p {
+        color: var(--accent);
+        transition: color 0.45s;
+      }
+
+      .card-name {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 8px;
+        line-height: 1.2;
+        letter-spacing: -0.02em;
+        font-family: var(--font-display);
+        transition:
+          color 0.45s,
+          font-size 0.45s,
+          font-family 0.45s,
+          letter-spacing 0.45s;
+      }
+      .card-desc {
+        font-size: 11px;
+        color: var(--text-muted);
+        line-height: 1.65;
+        flex: 1;
+        font-family: var(--font-body);
+        transition:
+          color 0.45s,
+          font-size 0.45s,
+          font-family 0.45s;
+      }
+      .card-tag {
+        display: inline-block;
+        font-family: var(--font-body);
+        font-size: 10px;
+        color: var(--accent);
+        border: 1px solid var(--accent);
+        border-radius: 3px;
+        padding: 2px 7px;
+        margin-top: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        align-self: flex-start;
+        transition:
+          color 0.45s,
+          border-color 0.45s,
+          border-radius 0.45s,
+          font-family 0.45s;
+      }
+
+      /* ── CARD LINK ────────────────────────────────────────── */
+
+      .card-link {
+        padding: 16px;
+      }
+
+      .card-link-cmd {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text);
+        margin-bottom: 5px;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        letter-spacing: 0.01em;
+        font-family: var(--font-body);
+        transition:
+          color 0.45s,
+          font-size 0.45s,
+          font-family 0.45s;
+      }
+      .card-link-cmd .p {
+        color: var(--accent);
+        transition: color 0.45s;
+      }
+
+      .card-link-desc {
+        font-size: 11px;
+        color: var(--text-muted);
+        padding-left: 16px;
+        line-height: 1.5;
+        letter-spacing: 0.01em;
+        font-family: var(--font-body);
+        transition:
+          color 0.45s,
+          font-size 0.45s,
+          font-family 0.45s,
+          padding 0.45s;
+      }
+      .card-link-desc::before {
+        content: '↳ ';
+      }
+
+      /* ── FOOTER ───────────────────────────────────────────── */
 
       .footer {
-        animation: fadeUp 0.6s ease-out 0.6s forwards;
+        margin-top: 44px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border);
+        text-align: center;
+        font-size: 11px;
+        color: var(--text-muted);
+        letter-spacing: 0.04em;
+        font-family: var(--font-body);
         opacity: 0;
+        animation: fadeUp 0.5s ease-out 1.1s forwards;
+        transition:
+          color 0.45s,
+          border-color 0.45s,
+          font-size 0.45s,
+          font-family 0.45s;
+      }
+      .footer em {
+        color: var(--text-sub);
+        font-style: normal;
+        transition: color 0.45s;
       }
 
+      /* ══════════════════════════════════════════════════════
+         THEME D — RETRO Y2K / INTERNET NOSTÁLGICO
+         ══════════════════════════════════════════════════════ */
+
+      [data-theme='d'] .terminal-chrome {
+        border-bottom-color: rgba(0, 255, 255, 0.15);
+      }
+      [data-theme='d'] .chrome-title {
+        color: #7040c0;
+      }
+
+      [data-theme='d'] .username {
+        font-size: 42px;
+        letter-spacing: 0.12em;
+        text-shadow:
+          0 0 20px var(--accent),
+          0 0 50px var(--accent-glow);
+      }
+      [data-theme='d'] .username-cursor {
+        background: var(--accent);
+        box-shadow:
+          0 0 10px var(--accent),
+          0 0 20px var(--accent-glow);
+      }
+      [data-theme='d'] .bio {
+        color: #ff00ff;
+        font-style: normal;
+        font-size: 12px;
+        letter-spacing: 0.06em;
+      }
+      [data-theme='d'] .prompt-line .cmd {
+        color: #ff00ff;
+      }
+
+      [data-theme='d'] .section-label {
+        font-size: 12px;
+        color: #ff00ff;
+      }
+      [data-theme='d'] .sl-prefix {
+        color: var(--accent);
+      }
+
+      [data-theme='d'] .card {
+        border-color: rgba(0, 255, 255, 0.2);
+        box-shadow:
+          0 0 8px rgba(0, 255, 255, 0.1),
+          inset 0 0 8px rgba(0, 255, 255, 0.03);
+      }
+      [data-theme='d'] .card--loaded:hover {
+        border-color: var(--accent);
+        box-shadow:
+          0 0 20px var(--accent-glow),
+          0 0 40px rgba(255, 0, 153, 0.2),
+          inset 0 0 20px var(--accent-dim);
+        animation: glitch-card 0.22s steps(5) infinite;
+        transform: none;
+        opacity: 1;
+      }
+
+      [data-theme='d'] .card-win-bar {
+        border-bottom-color: rgba(0, 255, 255, 0.15);
+        background: rgba(0, 255, 255, 0.03);
+      }
+      [data-theme='d'] .win-title {
+        color: #7040c0;
+      }
+      [data-theme='d'] .card-cmd .p {
+        color: #ff00ff;
+      }
+      [data-theme='d'] .card-cmd {
+        color: #7040c0;
+        font-size: 12px;
+      }
+      [data-theme='d'] .card-name {
+        font-size: 28px;
+        letter-spacing: 0.08em;
+        text-shadow: 0 0 12px var(--accent-glow);
+      }
+      [data-theme='d'] .card-tag {
+        color: #ff00ff;
+        border-color: #ff00ff;
+        text-shadow: 0 0 8px rgba(255, 0, 255, 0.5);
+        letter-spacing: 0.14em;
+      }
+      [data-theme='d'] .card-link-cmd {
+        font-size: 16px;
+        letter-spacing: 0.06em;
+        text-shadow: 0 0 8px var(--accent-glow);
+      }
+      [data-theme='d'] .card-link-cmd .p {
+        color: #ff00ff;
+      }
+      [data-theme='d'] .card-link-desc::before {
+        content: '>> ';
+        color: var(--accent);
+      }
+      [data-theme='d'] .social-link {
+        border-color: rgba(0, 255, 255, 0.3);
+        box-shadow: 0 0 8px rgba(0, 255, 255, 0.1);
+      }
+      [data-theme='d'] .social-link:hover {
+        box-shadow:
+          0 0 16px var(--accent-glow),
+          0 0 32px rgba(255, 0, 153, 0.15);
+      }
+      [data-theme='d'] .profile-img {
+        border-radius: 0;
+        box-shadow:
+          0 0 20px var(--accent-glow),
+          0 0 40px rgba(255, 0, 153, 0.2);
+      }
+
+      /* ── RESPONSIVE ───────────────────────────────────────── */
+
+      @media (max-width: 620px) {
+        .featured-grid {
+          grid-template-columns: 1fr !important;
+        }
+        .theme-switcher {
+          top: 12px;
+          right: 12px;
+        }
+        [data-theme='d'] .username {
+          font-size: 32px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .header-inner {
+          flex-direction: column;
+        }
+        .username {
+          font-size: 26px;
+        }
+        .username-cursor {
+          height: 26px;
+        }
+        .links-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+
+      /* ── REDUCED MOTION ───────────────────────────────────── */
+
       @media (prefers-reduced-motion: reduce) {
-        * {
-          animation: none !important;
-          transition: none !important;
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          transition-duration: 0.01ms !important;
+        }
+        .cursor {
+          display: none;
         }
       }
     </style>
   </head>
-  <body
-    class="bg-stone-100 dark:bg-black text-black dark:text-stone-100 transition-colors duration-300"
-  >
-    <div class="w-full px-5 py-8">
-      <header class="header text-center max-w-2xl mx-auto mb-10">
-        <img
-          src="profile.webp"
-          alt="LinkStrifer"
-          class="w-32 h-32 mx-auto mb-5 rounded-full shadow-md object-cover bg-white dark:bg-stone-900"
-        />
-        <h1 class="text-4xl font-bold mb-2 tracking-tight">@LinkStrifer</h1>
-        <p class="text-base text-stone-600 dark:text-stone-400 mb-5">
-          Desarrollador y Creador de Contenido
-        </p>
-        <div class="flex gap-3 justify-center">
-          <a
-            href="https://youtube.com/@linkstrifer1"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="w-11 h-11 rounded-full bg-white dark:bg-stone-900 shadow-sm hover:shadow-md hover:scale-110 transition-all active:scale-95 flex items-center justify-center text-lg cursor-pointer"
-            aria-label="YouTube"
-          >
-            <i class="fab fa-youtube"></i>
-          </a>
-          <a
-            href="https://tiktok.com/@linkstrifer"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="w-11 h-11 rounded-full bg-white dark:bg-stone-900 shadow-sm hover:shadow-md hover:scale-110 transition-all active:scale-95 flex items-center justify-center text-lg cursor-pointer"
-            aria-label="TikTok"
-          >
-            <i class="fab fa-tiktok"></i>
-          </a>
-          <a
-            href="https://www.instagram.com/linkstrifer/"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="w-11 h-11 rounded-full bg-white dark:bg-stone-900 shadow-sm hover:shadow-md hover:scale-110 transition-all active:scale-95 flex items-center justify-center text-lg cursor-pointer"
-            aria-label="Instagram"
-          >
-            <i class="fab fa-instagram"></i>
-          </a>
+  <body>
+    <div class="cursor" id="cursor" aria-hidden="true"></div>
+
+    <div class="theme-switcher" role="group" aria-label="Cambiar diseño">
+      <span class="ts-label">// style</span>
+      <div class="ts-pills">
+        <button
+          type="button"
+          class="ts-pill"
+          data-t="a"
+          title="Terminal / Dev Identity"
+        >
+          A
+        </button>
+        <button type="button" class="ts-pill" data-t="d" title="Retro Y2K">
+          D
+        </button>
+      </div>
+    </div>
+
+    <main class="page">
+      <header class="header">
+        <div class="terminal-chrome" aria-hidden="true">
+          <span class="chrome-dot r"></span>
+          <span class="chrome-dot y"></span>
+          <span class="chrome-dot g"></span>
+          <span class="chrome-title">session — linkstrifer@dev:~</span>
+        </div>
+        <div class="header-inner">
+          <img
+            src="profile.webp"
+            alt="Foto de perfil de LinkStrifer"
+            class="profile-img"
+          />
+          <div class="header-content">
+            <p class="prompt-line"><span class="cmd">$</span> whoami</p>
+            <h1 class="username">
+              @linkstrifer<span
+                class="username-cursor"
+                aria-hidden="true"
+              ></span>
+            </h1>
+            <p class="bio">// Desarrollador y Creador de Contenido</p>
+            <nav class="social-links" aria-label="Redes sociales">
+              <a
+                href="https://youtube.com/@linkstrifer1"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="social-link"
+                aria-label="YouTube"
+              >
+                <i class="fab fa-youtube" aria-hidden="true"></i> youtube
+              </a>
+              <a
+                href="https://tiktok.com/@linkstrifer"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="social-link"
+                aria-label="TikTok"
+              >
+                <i class="fab fa-tiktok" aria-hidden="true"></i> tiktok
+              </a>
+              <a
+                href="https://www.instagram.com/linkstrifer/"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="social-link"
+                aria-label="Instagram"
+              >
+                <i class="fab fa-instagram" aria-hidden="true"></i> instagram
+              </a>
+            </nav>
+          </div>
         </div>
       </header>
 
-      <div class="cards-grid mb-10" id="links">
+      <p
+        class="section-label"
+        style="animation-delay: 0.46s"
+        aria-hidden="true"
+        data-prefix-a="$"
+        data-text-a="ls --featured"
+        data-prefix-d=">_"
+        data-text-d="FEATURED"
+      >
+        <span class="sl-prefix">$</span>
+        <span class="sl-text">ls --featured</span>
+      </p>
+
+      <div class="featured-grid">
         <a
           href="https://productos.strifer.link/"
           target="_blank"
           rel="noopener noreferrer"
-          class="card card-featured bg-gradient-to-br from-violet-500 to-purple-600 text-white min-h-52 p-8 rounded-3xl flex flex-col justify-center shadow-md hover:shadow-xl hover:-translate-y-2 hover:outline hover:outline-2 hover:outline-blue-500 hover:outline-offset-2 transition-all overflow-hidden cursor-pointer"
+          class="card card-featured"
+          aria-label="Productos — Mis recomendaciones personales"
         >
-          <h2 class="text-3xl font-bold mb-2 tracking-tight">🔥 Productos</h2>
-          <p class="text-sm opacity-90">Mis recomendaciones personales</p>
+          <div class="card-win-bar" aria-hidden="true">
+            <span class="win-dot r"></span><span class="win-dot y"></span
+            ><span class="win-dot g"></span>
+            <span class="win-title">productos.strifer.link</span>
+          </div>
+          <div class="card-featured-body">
+            <p class="card-cmd"><span class="p">$</span> open productos</p>
+            <h2 class="card-name">🔥 Productos</h2>
+            <p class="card-desc">
+              Mis recomendaciones personales, seleccionadas cuidadosamente.
+            </p>
+            <span class="card-tag">featured</span>
+          </div>
         </a>
 
         <a
-          href="https://youtube.com/@linkstrifer1"
+          href="https://hoyen.link"
           target="_blank"
           rel="noopener noreferrer"
-          class="card card-link bg-white dark:bg-stone-900 rounded-3xl p-6 flex items-center gap-4 min-h-20 shadow-md hover:shadow-xl hover:-translate-y-2 hover:outline hover:outline-2 hover:outline-blue-500 hover:outline-offset-2 transition-all overflow-hidden cursor-pointer"
+          class="card card-featured"
+          aria-label="Hoyen — Las noticias más relevantes del día"
         >
-          <div
-            class="card-link-icon youtube rounded-lg flex-shrink-0 bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400"
-          >
-            <div class="icon-wrapper">
-              <div class="icon-blur">
-                <i class="fab fa-youtube"></i>
-              </div>
-              <div class="icon-main">
-                <i class="fab fa-youtube"></i>
-              </div>
-            </div>
+          <div class="card-win-bar" aria-hidden="true">
+            <span class="win-dot r"></span><span class="win-dot y"></span
+            ><span class="win-dot g"></span>
+            <span class="win-title">hoyen.link</span>
           </div>
-          <div class="card-link-text">
-            <h3 class="font-semibold text-sm">YouTube</h3>
-            <p class="text-xs text-stone-600 dark:text-stone-400">
-              Tutoriales y contenido
+          <div class="card-featured-body">
+            <p class="card-cmd"><span class="p">$</span> curl hoyen.link</p>
+            <h2 class="card-name">📰 Hoyen</h2>
+            <p class="card-desc">
+              Las noticias más relevantes del día, curadas para ti.
             </p>
-          </div>
-        </a>
-
-        <a
-          href="https://tiktok.com/@linkstrifer"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="card card-link bg-white dark:bg-stone-900 rounded-3xl p-6 flex items-center gap-4 min-h-20 shadow-md hover:shadow-xl hover:-translate-y-2 hover:outline hover:outline-2 hover:outline-blue-500 hover:outline-offset-2 transition-all overflow-hidden cursor-pointer"
-        >
-          <div
-            class="card-link-icon tiktok rounded-lg flex-shrink-0 bg-black/10 dark:bg-white/10 text-black dark:text-white"
-          >
-            <div class="icon-wrapper">
-              <div class="icon-blur">
-                <i class="fab fa-tiktok"></i>
-              </div>
-              <div class="icon-main">
-                <i class="fab fa-tiktok"></i>
-              </div>
-            </div>
-          </div>
-          <div class="card-link-text">
-            <h3 class="font-semibold text-sm">TikTok</h3>
-            <p class="text-xs text-stone-600 dark:text-stone-400">
-              Videos cortos y trending
-            </p>
-          </div>
-        </a>
-
-        <a
-          href="https://www.instagram.com/linkstrifer/"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="card card-link bg-white dark:bg-stone-900 rounded-3xl p-6 flex items-center gap-4 min-h-20 shadow-md hover:shadow-xl hover:-translate-y-2 hover:outline hover:outline-2 hover:outline-blue-500 hover:outline-offset-2 transition-all overflow-hidden cursor-pointer"
-        >
-          <div
-            class="card-link-icon instagram rounded-lg flex-shrink-0 bg-pink-100 dark:bg-pink-900/20 text-pink-600 dark:text-pink-400"
-          >
-            <div class="icon-wrapper">
-              <div class="icon-blur">
-                <i class="fab fa-instagram"></i>
-              </div>
-              <div class="icon-main">
-                <i class="fab fa-instagram"></i>
-              </div>
-            </div>
-          </div>
-          <div class="card-link-text">
-            <h3 class="font-semibold text-sm">Instagram</h3>
-            <p class="text-xs text-stone-600 dark:text-stone-400">
-              Historias y reels
-            </p>
-          </div>
-        </a>
-
-        <a
-          href="https://elordendemarvel.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="card card-link bg-white dark:bg-stone-900 rounded-3xl p-6 flex items-center gap-4 min-h-20 shadow-md hover:shadow-xl hover:-translate-y-2 hover:outline hover:outline-2 hover:outline-blue-500 hover:outline-offset-2 transition-all overflow-hidden cursor-pointer"
-        >
-          <div
-            class="card-link-icon marvel rounded-lg flex-shrink-0 bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400"
-          >
-            <div class="icon-wrapper">
-              <div class="icon-blur">
-                <i class="fas fa-mask"></i>
-              </div>
-              <div class="icon-main">
-                <i class="fas fa-mask"></i>
-              </div>
-            </div>
-          </div>
-          <div class="card-link-text">
-            <h3 class="font-semibold text-sm">Marvel Timeline</h3>
-            <p class="text-xs text-stone-600 dark:text-stone-400">
-              Línea de tiempo del MCU
-            </p>
-          </div>
-        </a>
-
-        <a
-          href="https://CualApplePencil.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="card card-link bg-white dark:bg-stone-900 rounded-3xl p-6 flex items-center gap-4 min-h-20 shadow-md hover:shadow-xl hover:-translate-y-2 hover:outline hover:outline-2 hover:outline-blue-500 hover:outline-offset-2 transition-all overflow-hidden cursor-pointer"
-        >
-          <div
-            class="card-link-icon apple rounded-lg flex-shrink-0 bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
-          >
-            <div class="icon-wrapper">
-              <div class="icon-blur">
-                <i class="fab fa-apple"></i>
-              </div>
-              <div class="icon-main">
-                <i class="fab fa-apple"></i>
-              </div>
-            </div>
-          </div>
-          <div class="card-link-text">
-            <h3 class="font-semibold text-sm">Cual Apple Pencil</h3>
-            <p class="text-xs text-stone-600 dark:text-stone-400">
-              Comparador de Apple Pencils
-            </p>
-          </div>
-        </a>
-
-        <a
-          href="mailto:biz@strifer.link"
-          class="card card-link bg-white dark:bg-stone-900 rounded-3xl p-6 flex items-center gap-4 min-h-20 shadow-md hover:shadow-xl hover:-translate-y-2 hover:outline hover:outline-2 hover:outline-blue-500 hover:outline-offset-2 transition-all overflow-hidden cursor-pointer"
-        >
-          <div
-            class="card-link-icon email rounded-lg flex-shrink-0 bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
-          >
-            <div class="icon-wrapper">
-              <div class="icon-blur">
-                <i class="fas fa-envelope"></i>
-              </div>
-              <div class="icon-main">
-                <i class="fas fa-envelope"></i>
-              </div>
-            </div>
-          </div>
-          <div class="card-link-text">
-            <h3 class="font-semibold text-sm">Business</h3>
-            <p class="text-xs text-stone-600 dark:text-stone-400">
-              Consultas y colaboraciones
-            </p>
+            <span class="card-tag">nuevo</span>
           </div>
         </a>
       </div>
 
-      <footer
-        class="footer text-center py-10 px-5 text-stone-600 dark:text-stone-400 text-sm max-w-2xl mx-auto"
+      <p
+        class="section-label"
+        style="animation-delay: 0.62s"
+        aria-hidden="true"
+        data-prefix-a="$"
+        data-text-a="ls --links"
+        data-prefix-d=">_"
+        data-text-d="LINKS"
       >
-        <p>&copy; 2025 LinkStrifer. All rights reserved.</p>
+        <span class="sl-prefix">$</span>
+        <span class="sl-text">ls --links</span>
+      </p>
+
+      <div class="links-grid">
+        <a
+          href="https://youtube.com/@linkstrifer1"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="card card-link"
+          aria-label="YouTube — Tutoriales y contenido"
+        >
+          <p class="card-link-cmd"><span class="p">$</span> youtube</p>
+          <p class="card-link-desc">Tutoriales y contenido</p>
+        </a>
+        <a
+          href="https://tiktok.com/@linkstrifer"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="card card-link"
+          aria-label="TikTok — Videos cortos y trending"
+        >
+          <p class="card-link-cmd"><span class="p">$</span> tiktok</p>
+          <p class="card-link-desc">Videos cortos y trending</p>
+        </a>
+        <a
+          href="https://www.instagram.com/linkstrifer/"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="card card-link"
+          aria-label="Instagram — Historias y reels"
+        >
+          <p class="card-link-cmd"><span class="p">$</span> instagram</p>
+          <p class="card-link-desc">Historias y reels</p>
+        </a>
+        <a
+          href="https://elordendemarvel.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="card card-link"
+          aria-label="Marvel Timeline — Línea de tiempo del MCU"
+        >
+          <p class="card-link-cmd"><span class="p">$</span> marvel</p>
+          <p class="card-link-desc">Línea de tiempo del MCU</p>
+        </a>
+        <a
+          href="https://CualApplePencil.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="card card-link"
+          aria-label="CualApplePencil — Comparador de Apple Pencils"
+        >
+          <p class="card-link-cmd"><span class="p">$</span> apple-pencil</p>
+          <p class="card-link-desc">Comparador de Apple Pencils</p>
+        </a>
+        <a
+          href="mailto:biz@strifer.link"
+          class="card card-link"
+          aria-label="Business — Consultas y colaboraciones"
+        >
+          <p class="card-link-cmd"><span class="p">$</span> contact</p>
+          <p class="card-link-desc">Consultas y colaboraciones</p>
+        </a>
+      </div>
+
+      <footer class="footer">
+        <em>// © 2026 LinkStrifer — All rights reserved.</em>
       </footer>
-    </div>
+    </main>
 
     <script>
-      const html = document.documentElement;
+      /* ── Cursor ───────────────────────────────────────────── */
+      const cursorEl = document.getElementById('cursor');
+      document.addEventListener('mousemove', (e) => {
+        cursorEl.style.transform = `translate(${e.clientX - 1}px, ${e.clientY - 2}px)`;
+      });
+      document.addEventListener('mouseleave', () => {
+        cursorEl.style.opacity = '0.3';
+      });
+      document.addEventListener('mouseenter', () => {
+        cursorEl.style.opacity = '1';
+      });
 
-      function addRandomBackgrounds() {
-        const cards = document.querySelectorAll('.card-link');
-        const cardArray = Array.from(cards);
+      /* ── Theme system ─────────────────────────────────────── */
+      const THEMES = ['a', 'd'];
 
-        const numWithBg = Math.floor(Math.random() * 2) + 3;
-        const selectedIndices = new Set();
+      function setTheme(name) {
+        document.documentElement.dataset.theme = name;
 
-        while (
-          selectedIndices.size < numWithBg &&
-          selectedIndices.size < cardArray.length
-        ) {
-          selectedIndices.add(Math.floor(Math.random() * cardArray.length));
-        }
-
-        selectedIndices.forEach((index) => {
-          const card = cardArray[index];
-
-          card.classList.add(
-            'card-bg',
-            'relative',
-            'min-h-40',
-            'p-6',
-            'flex',
-            'flex-col',
-            'items-center',
-            'justify-center',
-          );
+        document.querySelectorAll('.ts-pill').forEach((p) => {
+          p.classList.toggle('active', p.dataset.t === name);
         });
-      }
 
-      function randomizeCardsLayout() {
-        const cardsGrid = document.querySelector('.cards-grid');
-        const cards = Array.from(cardsGrid.children);
-
-        for (let i = cards.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [cards[i], cards[j]] = [cards[j], cards[i]];
-        }
-
-        cards.forEach((card) => cardsGrid.appendChild(card));
-
-        if (window.innerWidth >= 700) {
-          const possibleRowSizes = [2, 3, 4];
-          const possibleColSizes = [3, 4];
-
-          cards.forEach((card) => {
-            const rowSize =
-              possibleRowSizes[
-                Math.floor(Math.random() * possibleRowSizes.length)
-              ];
-            const colSize =
-              possibleColSizes[
-                Math.floor(Math.random() * possibleColSizes.length)
-              ];
-            card.style.gridRow = `span ${rowSize}`;
-            card.style.gridColumn = `span ${colSize}`;
-          });
-        }
-      }
-
-      function initializePage() {
-        randomizeCardsLayout();
-        addRandomBackgrounds();
-      }
-
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initializePage);
-      } else {
-        initializePage();
-      }
-
-      const cards = document.querySelectorAll('.card');
-
-      document.addEventListener('pointermove', (event) => {
-        cards.forEach((article) => {
-          const rect = article.getBoundingClientRect();
-
-          const centerX = rect.left + rect.width / 2;
-          const centerY = rect.top + rect.height / 2;
-
-          const relativeX = event.clientX - centerX;
-          const relativeY = event.clientY - centerY;
-
-          const x = relativeX / (rect.width / 2);
-          const y = relativeY / (rect.height / 2);
-
-          article.style.setProperty('--pointer-x', x.toFixed(3));
-          article.style.setProperty('--pointer-y', y.toFixed(3));
+        document.querySelectorAll('.section-label').forEach((el) => {
+          const key = name.toUpperCase();
+          const prefix = el.dataset['prefix' + key] || '$';
+          const text = el.dataset['text' + key] || 'links';
+          el.querySelector('.sl-prefix').textContent = prefix;
+          el.querySelector('.sl-text').textContent = text;
         });
+
+        try {
+          localStorage.setItem('ls-theme', name);
+        } catch (_) {}
+      }
+
+      let saved;
+      try {
+        saved = localStorage.getItem('ls-theme');
+      } catch (_) {}
+      const init =
+        saved && THEMES.includes(saved)
+          ? saved
+          : THEMES[Math.floor(Math.random() * THEMES.length)];
+      setTheme(init);
+
+      document.querySelectorAll('.card').forEach((card) => {
+        card.addEventListener(
+          'animationend',
+          (e) => {
+            if (e.animationName === 'fadeUp') {
+              card.classList.add('card--loaded');
+            }
+          },
+          { once: true },
+        );
+      });
+
+      document.querySelectorAll('.ts-pill').forEach((p) => {
+        p.addEventListener('click', () => setTheme(p.dataset.t));
       });
     </script>
   </body>
