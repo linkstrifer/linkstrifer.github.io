@@ -482,6 +482,9 @@
         grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
         gap: 8px;
       }
+      .links-grid .card {
+        animation-delay: calc(0.72s + (var(--stagger-index, 0) * 0.06s));
+      }
 
       /* ── CARD BASE ────────────────────────────────────────── */
 
@@ -519,25 +522,6 @@
       .featured-grid .card:nth-child(2) {
         animation-delay: 0.65s;
       }
-      .links-grid .card:nth-child(1) {
-        animation-delay: 0.72s;
-      }
-      .links-grid .card:nth-child(2) {
-        animation-delay: 0.78s;
-      }
-      .links-grid .card:nth-child(3) {
-        animation-delay: 0.84s;
-      }
-      .links-grid .card:nth-child(4) {
-        animation-delay: 0.9s;
-      }
-      .links-grid .card:nth-child(5) {
-        animation-delay: 0.96s;
-      }
-      .links-grid .card:nth-child(6) {
-        animation-delay: 1.02s;
-      }
-
       /* ── CARD FEATURED ────────────────────────────────────── */
 
       .card-featured {
@@ -1071,8 +1055,12 @@
           class="card card-link"
           aria-label="CualApplePencil — Comparador de Apple Pencils"
         >
-          <p class="card-link-cmd"><span class="p">$</span> apple-pencil</p>
-          <p class="card-link-desc">Comparador de Apple Pencils</p>
+          <p class="card-link-cmd">
+            <span class="p">$</span> Cual Apple Pencil
+          </p>
+          <p class="card-link-desc">
+            Te ayudo a elegir cual Apple Pencil le sirve a tu iPad
+          </p>
         </a>
         <a
           href="https://metacriticones.com"
@@ -1158,6 +1146,10 @@
           },
           { once: true },
         );
+      });
+
+      document.querySelectorAll('.links-grid .card').forEach((card, index) => {
+        card.style.setProperty('--stagger-index', index);
       });
 
       document.querySelectorAll('.ts-pill').forEach((p) => {
