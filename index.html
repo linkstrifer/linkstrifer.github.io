@@ -530,6 +530,19 @@
         min-height: 190px;
       }
 
+      [data-theme='a'] .card-featured-highlight {
+        box-shadow:
+          0 0 16px rgba(0, 255, 65, 0.7),
+          0 0 28px rgba(0, 255, 65, 0.45),
+          inset 0 0 14px rgba(0, 255, 65, 0.22);
+      }
+      [data-theme='a'] .card-featured-highlight:hover {
+        box-shadow:
+          0 0 22px rgba(0, 255, 65, 0.75),
+          0 0 40px rgba(0, 255, 65, 0.55),
+          inset 0 0 18px rgba(0, 255, 65, 0.3);
+      }
+
       .card-win-bar {
         display: flex;
         align-items: center;
@@ -750,6 +763,18 @@
           0 0 8px rgba(0, 255, 255, 0.1),
           inset 0 0 8px rgba(0, 255, 255, 0.03);
       }
+      [data-theme='d'] .card-featured-highlight {
+        box-shadow:
+          0 0 16px rgba(255, 0, 255, 0.7),
+          0 0 28px rgba(255, 0, 255, 0.45),
+          inset 0 0 14px rgba(255, 0, 255, 0.22);
+      }
+      [data-theme='d'] .card-featured-highlight:hover {
+        box-shadow:
+          0 0 24px rgba(255, 0, 255, 0.78),
+          0 0 42px rgba(255, 0, 153, 0.58),
+          inset 0 0 18px rgba(255, 0, 255, 0.3);
+      }
       [data-theme='d'] .card--loaded:hover {
         border-color: var(--accent);
         box-shadow:
@@ -950,6 +975,31 @@
 
       <div class="featured-grid">
         <a
+          href="https://event.wondershare.com/api/s/3fl"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="card card-featured card-featured-highlight"
+          aria-label="Wondershare Recoverit — Software para recuperar archivos eliminados"
+        >
+          <div class="card-win-bar" aria-hidden="true">
+            <span class="win-dot r"></span><span class="win-dot y"></span
+            ><span class="win-dot g"></span>
+            <span class="win-title">event.wondershare.com</span>
+          </div>
+          <div class="card-featured-body">
+            <p class="card-cmd"><span class="p">$</span> open recoverit</p>
+            <h2 class="card-name">
+              <i class="fa-regular fa-file-lines" aria-hidden="true"></i>
+              Wondershare Recoverit
+            </h2>
+            <p class="card-desc">
+              Software para recuperar archivos eliminados.
+            </p>
+            <span class="card-tag">featured</span>
+          </div>
+        </a>
+
+        <a
           href="https://productos.strifer.link/"
           target="_blank"
           rel="noopener noreferrer"
@@ -970,28 +1020,6 @@
             <span class="card-tag">featured</span>
           </div>
         </a>
-
-        <a
-          href="https://hoyen.link"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="card card-featured"
-          aria-label="Hoyen — Las noticias más relevantes del día"
-        >
-          <div class="card-win-bar" aria-hidden="true">
-            <span class="win-dot r"></span><span class="win-dot y"></span
-            ><span class="win-dot g"></span>
-            <span class="win-title">hoyen.link</span>
-          </div>
-          <div class="card-featured-body">
-            <p class="card-cmd"><span class="p">$</span> curl hoyen.link</p>
-            <h2 class="card-name">📰 Hoyen</h2>
-            <p class="card-desc">
-              Las noticias más relevantes del día, curadas para ti.
-            </p>
-            <span class="card-tag">nuevo</span>
-          </div>
-        </a>
       </div>
 
       <p
@@ -1008,6 +1036,16 @@
       </p>
 
       <div class="links-grid">
+        <a
+          href="https://hoyen.link"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="card card-link"
+          aria-label="Hoyen — Las noticias más relevantes del día"
+        >
+          <p class="card-link-cmd"><span class="p">$</span> hoyen</p>
+          <p class="card-link-desc">Las noticias más relevantes del día</p>
+        </a>
         <a
           href="https://youtube.com/@linkstrifer1"
           target="_blank"
